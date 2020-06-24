@@ -16,7 +16,10 @@ print(g.get_board())
 g.insert_piece(0,(3,3))
 print(g.get_board())
 g.insert_piece(1,(1,3))
-
+g.insert_piece(1,(1,3))
+g.insert_piece(1,(1,3))
+g.insert_piece(1,(1,3))
+g.insert_piece(1,(1,3))
 
 print(g.get_board())
 

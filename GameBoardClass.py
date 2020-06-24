@@ -85,27 +85,15 @@ class GameGrid:
         if grav == False:
            self._grid[locX,locY] = pieceNum
         else:
-           colStack = list(self._grid[:, locY])
-           # if(colStack[-1]!=-1 and colStack[0]==-1):
-           #     colStack.reverse()
-           
-           while len(colStack) > 0 and colStack[-1] == -1:
-               print(colStack.pop())
+           if(self._grid[0,locY]!= -1):
+                raise Exception("Piece out of bounds of game board")
           
-           colStack.append(pieceNum)
-           while(len(colStack)<self._X):
-               colStack.append(-1)
-               
-           # colStack.reverse()
-           colStackNp = np.array(colStack).reshape(len(colStack),1)
-           # print(colStackNp)
-           # print((self._grid[:,0:locY]))
-           # print(self._grid[:,locY:-1])
-           
-           new_grid = np.concatenate((self._grid[:,0:locY],colStackNp),axis = 1)
-           new_grid = np.concatenate((new_grid, self._grid[:,locY:-1]),axis = 1)
-           self._grid = new_grid
-            
+           for i in range(self._X-1, -1,-1):
+               cur = self._grid[i , locY]
+               if cur == -1:
+                   self._grid[i , locY] = pieceNum 
+                   break
+
 
     
     
