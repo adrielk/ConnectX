@@ -18,8 +18,13 @@ In real life and board has the following capabilities:
     A board has gravity
     A board can have a specific pattern (like a chess board)
         In order to make it easy to change, simply add color attributes to grid squares
-
+    We can see if a board has a line (a sequence of adjacent pieces)
+    
     NOTE:X is rows, Y is columns
+    NOTE: -1 represents an empty grid point
+    
+    To do:
+        add more documentation.
 
 """
     
@@ -61,10 +66,151 @@ class GameGrid:
             if len(res) !=0:
                 full = False
         return full
+
+    """
+    Helpers for findSequence. Vertically traversing down a column. Returns ending indices and whether or not length matches. 
+        Horizontal traversal works the same way.
+    NOTE: Sequences are repeated if they are longer than required length. These will still be valid sequences
+    
+    """
+
+    def _verticalTraversal(self, startPoint, length):
+        """
+        Parameters
+        ----------
+        startPoint : tuple
+            Tuple representing starting point: (row, col)
+        length : int
+            Minimum length of sequence
+        Returns
+        -------
+        endPoint : tuple
+            Tuple representing end of sequence: (row, col)
+        Boolean
+            This bool represents whether of not a path was found at the startPoint
+
+        """
+        #grid variables
+        indX = startPoint[0]#rows(what we want to traverse along)
+        indY = startPoint[1]#cols
+        pieceNum = self._grid[indX,indY]
+        Xdim = self._X
+        #accumulator
+        curLength = 0
+        #returns
+        endPoint = (-1, -1)
+        
+        while indX < Xdim:
+            curPiece = self._grid[indX, indY]
+            if curPiece == pieceNum:
+                curLength += 1
+                endPoint = (indX , indY)
+            else:
+                break
+            indX += 1
+        
+        return endPoint, curLength >= length
+    
+    def _horizontalTraversal(self, startPoint, length):
+        #grid vars
+        
+        indX = startPoint[0]
+        indY = startPoint[1]
+        pieceNum = self._grid[indX,indY]
+        Ydim = self._Y
+        #accum
+        curLength = 0
+        #returns
+        endPoint = (-1 , -1)
+        
+        while indY < Ydim:
+            curPiece = self._grid[indX, indY]
+            if curPiece == pieceNum:
+                curLength += 1
+                endPoint = (indX, indY)
+            else:
+                break
+            indY += 1
+        
+        return endPoint, curLength >= length
+    
+    """
+    Note: forward is a boolean. True means forward diagonal, False means backward diagonal
+    """
+    def _DiagonalTraversal(self, startPoint, length, forward):
+        #grid vars
+        indX = startPoint[0]
+        indY = startPoint[1]
+        pieceNum = self._grid[indX, indY]
+        Ydim = self._Y
+        Xdim = self._X
+        #accum
+        curLength = 0
+        
+        #returns
+        endPoint = (-1, -1)
+        
+        while indY < Ydim and indX < Xdim:
+            curPiece = self._grid[indX, indY]
+            if curPiece == pieceNum:
+                curLength += 1
+                endPoint = (indX, indY)
+            else:
+                break
+            if forward == True:
+                indY += 1
+                indX += 1
+            else:
+                indY += 1
+                indX -= 1
+            
+        
+        return endPoint, curLength >= length
+    """
+    Sequence is defined as adjacent identical pieces either vertically, horiztonally, or diagonally
+    
+    Given length (length of sequence), return a dictionary of sequences with corresponding start, length, and traversal type.
+    3 Traversal types: "vert" ,"horz", "forDiag", "backDiag"
+    
+    NOTE: There could be a recursive implementation of this...
+    
+    Optimization Note: Stop vertical looping at a point where it's no longer possible to have a long enough sequence
+    
+    """    
+
+    def findSequences(self, length):
+        grid = self._grid
+        seqs = []
+        Xdim = self._X
+        Ydim = self._Y
+        #Vertical Check
+        for i in range(0, Xdim):
+            for k in range(0, Ydim):
+                curPoint = (i, k)
+                if(grid[i,k] != -1):
+                    #vertical check
+                    endP, exists = self._verticalTraversal(curPoint, length)
+                    if exists == True:
+                        seqs.append(("vert", curPoint, endP))#starting and ending point of sequence
+                    #horizontal check
+                    endP2, exists2 = self._horizontalTraversal(curPoint, length)
+                    if exists2 == True:
+                        seqs.append(("horz", curPoint, endP2))
+                    #back diagonal check
+                    endP3, exists3 = self._DiagonalTraversal(curPoint, length, False)
+                    if exists3 == True:
+                        seqs.append(("backDiag", curPoint, endP3))
+                    #forward diagonal check
+                    endP4, exists4 = self._DiagonalTraversal(curPoint, length, True)
+                    if exists4 == True:
+                        seqs.append(("forDiag", curPoint, endP4))
+                
+        return seqs                
+        
     """
     Returns a dictionary where piece number is key and value is 
         parallel arrays of row and column values for each piece number
-    """
+    """          
     def getPieceLocations(self):
         pLocs = dict()
         for p in self._pieces:
@@ -72,8 +218,6 @@ class GameGrid:
             pLocs[p] = locs
         return pLocs
     
-    
-    #Fix issues with gravity
     def insert_piece(self, pieceNum, location):
         locX = location[0]
         locY = location[1]
@@ -96,11 +240,7 @@ class GameGrid:
 
 
     
-    
-
-
-
-            
+                
         
     
 

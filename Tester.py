@@ -8,22 +8,34 @@ Tester
 """
 from GameBoardClass import GameGrid
 
-g = GameGrid(6,7, gravity = True)
+def printBoard(grid):
+    print(g.get_board(),'\n')
 
-g.insert_piece(0,(1,1))
-print(g.get_board())
+g = GameGrid(6,7, gravity = False)
 
-g.insert_piece(0,(3,3))
-print(g.get_board())
-g.insert_piece(1,(1,3))
-g.insert_piece(1,(1,3))
-g.insert_piece(1,(1,3))
-g.insert_piece(1,(1,3))
-g.insert_piece(1,(1,3))
+printBoard(g)
 
-print(g.get_board())
 
-locs = g.getPieceLocations()
+g.insert_piece(0, (1,2))
+g.insert_piece(0, (2,3))
+g.insert_piece(0, (3,4))
+g.insert_piece(0, (4,5))
+g.insert_piece(0, (5,6))
+
+g.insert_piece(0, (5,0))
+g.insert_piece(0, (4,1))
+g.insert_piece(0, (3,2))
+g.insert_piece(0, (2,3))
+g.insert_piece(0, (1,4))
+
+
+printBoard(g)
+
+seqs = g.findSequences(5)
+
+print(seqs)
+
+#locs = g.getPieceLocations()
 
 # for p in g.get_pieces():
 #     print(locs[p])
