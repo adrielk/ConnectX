@@ -29,6 +29,7 @@ In real life and board has the following capabilities:
 """
     
 import numpy as np
+from GamePieceClass import GamePiece
 
 class GameGrid:
     #pieces is the domain of pieces that will be used. They must be integers
@@ -218,9 +219,13 @@ class GameGrid:
             pLocs[p] = locs
         return pLocs
     
-    def insert_piece(self, pieceNum, location):
+    """
+        gamePiece is a GamePiece object. 
+    """
+    def insert_piece(self, gamePiece, location):
         locX = location[0]
         locY = location[1]
+        pieceNum = gamePiece.getPieceNum()
         grav = self._grav
         if type(pieceNum) != int:
             raise Exception("Please enter integer for piece number")
