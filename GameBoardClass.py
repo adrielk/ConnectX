@@ -21,7 +21,7 @@ In real life and board has the following capabilities:
     We can see if a board has a line (a sequence of adjacent pieces)
     
     NOTE:X is rows, Y is columns
-    NOTE: -1 represents an empty grid point
+    NOTE: None represents an empty grid point
     
     To do:
         add more documentation.
@@ -29,14 +29,32 @@ In real life and board has the following capabilities:
 """
     
 import numpy as np
-from GamePieceClass import GamePiece
+from GamePieceClass import GamePiece as gP
 
 class GameGrid:
-    #pieces is the domain of pieces that will be used. They must be integers
-    def __init__(self, sizeX = 0, sizeY = 0, pieces = [0 ,1], gravity = False):
+    def __init__(self, sizeX, sizeY, pieces, gravity = False):
+        """
+        Parameters
+        ----------
+        sizeX : int
+            Dimension of rows
+        sizeY : int
+            Dimension of columns
+        pieces : list
+            List containing GamePiece objects. This is the domain of pieces our grid will deal with.
+        gravity : bool, optional
+            Whether or not the gameboard is subject to gravity. Think Connect-4 vs Checkers.
+            The default is False.
+
+        Returns
+        -------
+        None.
+
+        """
         self._X = sizeX #int
         self._Y = sizeY #int
-        self._grid = np.full((sizeX, sizeY), -1)
+        self._grid = np.full((sizeX, sizeY), None)#Will consist of matrix of GamePiece objects
+        #self._intGrid = np.full((sizeX,sizeY), 0)#purely for display purposes
         self._pieces = pieces
         self._grav = gravity
     
@@ -45,6 +63,10 @@ class GameGrid:
     
     def get_board(self):
         return self._grid
+    
+    def get_boardInts(self):
+        intGrid = self._createIntGrid()
+        return intGrid
     
     def get_pieces(self):
         return self._pieces
@@ -56,17 +78,38 @@ class GameGrid:
         self._grid = new_grid
         
     def isEmpty(self):
-        compareGrid = np.full((self.X, self.Y), -1)
+        compareGrid = np.full((self.X, self.Y), None)
         #test if same shape, same element value
         return np.array_equal(compareGrid, self.grid)
     
     def isFull(self):
-        result = np.where(self._grid == -1)
+        result = np.where(self._grid == None)
         full = True
         for res in result:
             if len(res) !=0:
                 full = False
         return full
+    
+    def printboard(self):
+        intGrid = self._createIntGrid()
+        pGrid = np.where(intGrid == None,0, intGrid)
+        print(pGrid,"\n")
+        
+    """
+    Private helper method for getlocations and findSequence, which relys on an integer matrix of piece Id's
+    """        
+    def _createIntGrid(self):
+        intGrid = self._grid.copy()#must copy if we don't want it to act as a reference
+        #print(intGrid)
+        nilVal = None
+        for i in range(0, self._X):
+            for k in range(0, self._Y):
+                if intGrid[i,k] == None:
+                    intGrid[i,k] = nilVal
+                else:
+                    #print(intGrid[i,k])
+                    intGrid[i,k] = intGrid[i,k].getPieceNum()#replaces gamePiece Object with its unique Id
+        return intGrid
 
     """
     Helpers for findSequence. Vertically traversing down a column. Returns ending indices and whether or not length matches. 
@@ -75,7 +118,7 @@ class GameGrid:
     
     """
 
-    def _verticalTraversal(self, startPoint, length):
+    def _verticalTraversal(self, startPoint, length, grid):
         """
         Parameters
         ----------
@@ -94,7 +137,7 @@ class GameGrid:
         #grid variables
         indX = startPoint[0]#rows(what we want to traverse along)
         indY = startPoint[1]#cols
-        pieceNum = self._grid[indX,indY]
+        pieceNum = grid[indX,indY]
         Xdim = self._X
         #accumulator
         curLength = 0
@@ -102,7 +145,7 @@ class GameGrid:
         endPoint = (-1, -1)
         
         while indX < Xdim:
-            curPiece = self._grid[indX, indY]
+            curPiece = grid[indX, indY]
             if curPiece == pieceNum:
                 curLength += 1
                 endPoint = (indX , indY)
@@ -112,12 +155,12 @@ class GameGrid:
         
         return endPoint, curLength >= length
     
-    def _horizontalTraversal(self, startPoint, length):
+    def _horizontalTraversal(self, startPoint, length, grid):
         #grid vars
         
         indX = startPoint[0]
         indY = startPoint[1]
-        pieceNum = self._grid[indX,indY]
+        pieceNum = grid[indX,indY]
         Ydim = self._Y
         #accum
         curLength = 0
@@ -125,7 +168,7 @@ class GameGrid:
         endPoint = (-1 , -1)
         
         while indY < Ydim:
-            curPiece = self._grid[indX, indY]
+            curPiece = grid[indX, indY]
             if curPiece == pieceNum:
                 curLength += 1
                 endPoint = (indX, indY)
@@ -138,11 +181,11 @@ class GameGrid:
     """
     Note: forward is a boolean. True means forward diagonal, False means backward diagonal
     """
-    def _DiagonalTraversal(self, startPoint, length, forward):
+    def _diagonalTraversal(self, startPoint, length, forward, grid):
         #grid vars
         indX = startPoint[0]
         indY = startPoint[1]
-        pieceNum = self._grid[indX, indY]
+        pieceNum = grid[indX, indY]
         Ydim = self._Y
         Xdim = self._X
         #accum
@@ -152,7 +195,7 @@ class GameGrid:
         endPoint = (-1, -1)
         
         while indY < Ydim and indX < Xdim:
-            curPiece = self._grid[indX, indY]
+            curPiece = grid[indX, indY]
             if curPiece == pieceNum:
                 curLength += 1
                 endPoint = (indX, indY)
@@ -167,6 +210,11 @@ class GameGrid:
             
         
         return endPoint, curLength >= length
+    
+    def _isEmptySymbol(self, symbol):
+        return symbol == None #Empty = True
+        
+    
     """
     Sequence is defined as adjacent identical pieces either vertically, horiztonally, or diagonally
     
@@ -179,8 +227,8 @@ class GameGrid:
     
     """    
 
-    def findSequences(self, length):
-        grid = self._grid
+    def findsequences(self, length):
+        grid = self._createIntGrid()
         seqs = []
         Xdim = self._X
         Ydim = self._Y
@@ -188,62 +236,86 @@ class GameGrid:
         for i in range(0, Xdim):
             for k in range(0, Ydim):
                 curPoint = (i, k)
-                if(grid[i,k] != -1):
+                if(self._isEmptySymbol(grid[i,k]) == False): #grid[i,k] != -1):
                     #vertical check
-                    endP, exists = self._verticalTraversal(curPoint, length)
+                    endP, exists = self._verticalTraversal(curPoint, length, grid)
                     if exists == True:
                         seqs.append(("vert", curPoint, endP))#starting and ending point of sequence
                     #horizontal check
-                    endP2, exists2 = self._horizontalTraversal(curPoint, length)
+                    endP2, exists2 = self._horizontalTraversal(curPoint, length, grid)
                     if exists2 == True:
                         seqs.append(("horz", curPoint, endP2))
                     #back diagonal check
-                    endP3, exists3 = self._DiagonalTraversal(curPoint, length, False)
+                    endP3, exists3 = self._diagonalTraversal(curPoint, length, False, grid)
                     if exists3 == True:
                         seqs.append(("backDiag", curPoint, endP3))
                     #forward diagonal check
-                    endP4, exists4 = self._DiagonalTraversal(curPoint, length, True)
+                    endP4, exists4 = self._diagonalTraversal(curPoint, length, True, grid)
                     if exists4 == True:
                         seqs.append(("forDiag", curPoint, endP4))
                 
-        return seqs                
-        
+        return seqs                            
     """
     Returns a dictionary where piece number is key and value is 
         parallel arrays of row and column values for each piece number
+        This method of retrieving locations assumes that each piece has a unique pieceNum (id) associated with it.
     """          
-    def getPieceLocations(self):
+    def getlocations(self):
+        intGrid = self._createIntGrid();
         pLocs = dict()
         for p in self._pieces:
-            locs = np.where(self._grid == p)#Tuples of row and col of piece
+            #Since we're traversing pieces, we need to get unique id with getPieceNum
+            locs = np.where(intGrid == p.getPieceNum())#Tuples of row and col of piece
             pLocs[p] = locs
         return pLocs
     
     """
         gamePiece is a GamePiece object. 
+        To do: Insert actual game piece object at point. But what will actually be displayed is the game piece num.
+            Basically, the gamegrid should be a matrix of pieces, not integers! None = ~
     """
     def insert_piece(self, gamePiece, location):
+        """
+        Parameters
+        ----------
+        gamePiece : GamePiece object
+            GamePiece object we want to put on the board.
+        location : tuple
+            Tuple of ints representing location of gamePiece (R,C).
+
+        Raises
+        ------
+        Exception
+            Occurs when tuple elements are not all of type int.
+            Or when a piece is out of bounds.
+        Returns
+        -------
+        None.
+
+        """
         locX = location[0]
         locY = location[1]
-        pieceNum = gamePiece.getPieceNum()
+        #pieceNum = gamePiece.getPieceNum()
         grav = self._grav
-        if type(pieceNum) != int:
-            raise Exception("Please enter integer for piece number")
+        # if type(pieceNum) != int:
+        #     raise Exception("Please enter integer for piece number")
         if type(locX) != int or type(locY)!=int:
             raise Exception("Plese enter integers into tuple for location")
         if grav == False:
-           self._grid[locX,locY] = pieceNum
+           self._grid[locX,locY] = gamePiece
         else:
-           if(self._grid[0,locY]!= -1):
+           if(self._grid[0,locY] != None):
                 raise Exception("Piece out of bounds of game board")
           
            for i in range(self._X-1, -1,-1):
                cur = self._grid[i , locY]
-               if cur == -1:
-                   self._grid[i , locY] = pieceNum 
+               if cur == None:
+                   self._grid[i , locY] = gamePiece 
                    break
 
-
+    def __str__(self):
+        return ("Dimensions (R x C): ("+str(self._X)+","+str(self._Y)+
+                "), "+"Number of pieces: "+str(len(self._pieces))+", Gravity = "+str(self._grav))
     
                 
         
