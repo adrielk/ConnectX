@@ -1,2 +1,2 @@
 # ConnectX
-Python library for creating simple board games such as TicTacToe, Connect 4, etc. *In Progress*
+Python library for easily creating board/card games such as Tic-Tac-Toe, Connect 4, Poker, etc.
