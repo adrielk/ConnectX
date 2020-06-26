@@ -25,6 +25,8 @@ In real life and board has the following capabilities:
     
     To do:
         add more documentation.
+        Add a UI layer class
+        More objects: card deck, etc (implement UNO!)
 
 """
     
@@ -90,9 +92,9 @@ class GameGrid:
                 full = False
         return full
     
-    def printboard(self):
+    def printboard(self, nilSymbol = 0):
         intGrid = self._createIntGrid()
-        pGrid = np.where(intGrid == None,0, intGrid)
+        pGrid = np.where(intGrid == None,nilSymbol, intGrid)
         print(pGrid,"\n")
         
     """
@@ -228,6 +230,19 @@ class GameGrid:
     """    
 
     def findsequences(self, length):
+        """
+        Parameters
+        ----------
+        length : int
+            Length of sequence we're looking for.
+
+        Returns
+        -------
+        seqs : list
+            list of tuples of sequences. 
+            Each tuple contains the sequence type (str), the starting point (tuple), and ending point (tuple).
+
+        """
         grid = self._createIntGrid()
         seqs = []
         Xdim = self._X

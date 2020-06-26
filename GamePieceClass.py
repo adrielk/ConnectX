@@ -7,7 +7,7 @@ Created on Wed Jun 24 23:46:44 2020
 
 
 class GamePiece:
-     def __init__(self, color, name, num = None):
+     def __init__(self, num, name = None, color = None,):
          """
 
          Parameters
