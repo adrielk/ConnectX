@@ -67,7 +67,7 @@ class GameGrid:
         return self._grid
     
     def get_boardInts(self):
-        intGrid = self._createIntGrid()
+        intGrid = self.createIntGrid()
         return intGrid
     
     def get_pieces(self):
@@ -93,14 +93,14 @@ class GameGrid:
         return full
     
     def printboard(self, nilSymbol = 0):
-        intGrid = self._createIntGrid()
+        intGrid = self.createIntGrid()
         pGrid = np.where(intGrid == None,nilSymbol, intGrid)
         print(pGrid,"\n")
         
     """
     Private helper method for getlocations and findSequence, which relys on an integer matrix of piece Id's
     """        
-    def _createIntGrid(self):
+    def createIntGrid(self):
         intGrid = self._grid.copy()#must copy if we don't want it to act as a reference
         #print(intGrid)
         nilVal = None
@@ -243,7 +243,7 @@ class GameGrid:
             Each tuple contains the sequence type (str), the starting point (tuple), and ending point (tuple).
 
         """
-        grid = self._createIntGrid()
+        grid = self.createIntGrid()
         seqs = []
         Xdim = self._X
         Ydim = self._Y
@@ -276,7 +276,7 @@ class GameGrid:
         This method of retrieving locations assumes that each piece has a unique pieceNum (id) associated with it.
     """          
     def getlocations(self):
-        intGrid = self._createIntGrid();
+        intGrid = self.createIntGrid();
         pLocs = dict()
         for p in self._pieces:
             #Since we're traversing pieces, we need to get unique id with getPieceNum
