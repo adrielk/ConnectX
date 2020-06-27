@@ -96,7 +96,7 @@ class GameGrid:
         intGrid = self.createIntGrid()
         pGrid = np.where(intGrid == None,nilSymbol, intGrid)
         print(pGrid,"\n")
-        
+    
     """
     Private helper method for getlocations and findSequence, which relys on an integer matrix of piece Id's
     """        
@@ -283,6 +283,16 @@ class GameGrid:
             locs = np.where(intGrid == p.getPieceNum())#Tuples of row and col of piece
             pLocs[p] = locs
         return pLocs
+    """
+    Similar to getlocations but only returns tuples of the locations
+    """
+    def getPopulated(self):
+        locationSet = {}        
+        for i in range(0, self._X):
+            for k in range(0, self._Y):
+                if self._grid[i,k] != None:
+                    locationSet.add((i,k))
+        return locationSet
     
     """
         gamePiece is a GamePiece object. 
@@ -293,7 +303,7 @@ class GameGrid:
         """
         Parameters
         ----------
-        gamePiece : GamePiece object
+        gamePiece : GamePiece object/Card object
             GamePiece object we want to put on the board.
         location : tuple
             Tuple of ints representing location of gamePiece (R,C).
@@ -327,6 +337,25 @@ class GameGrid:
                if cur == None:
                    self._grid[i , locY] = gamePiece 
                    break
+    """
+    shapeMatch returns true when shapes of both grids are the same and when the set of locations at which their game pieces 
+    are populated are equal.
+    """           
+    def shapeMatch(self, otherGrid):
+        sameShape = self._grid.shape == otherGrid.get_board().shape
+        myLocs = self.getPopulated()
+        otherLocs = otherGrid.getPopulated()
+        
+        return sameShape and otherLocs == myLocs
+               
+    """
+    Overrided equals method which compares based on equality of integer grid representation of grid matrices
+    """
+    def __eq__(self, otherGrid):
+        myIntGrid = self.createIntGrid()
+        otherIntGrid = otherGrid.createIntGrid()
+        return myIntGrid == otherIntGrid
+        
 
     def __str__(self):
         return ("Dimensions (R x C): ("+str(self._X)+","+str(self._Y)+
