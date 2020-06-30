@@ -61,10 +61,9 @@ def getAdjacentValues(grid, index):
     col = index[1]
     
     if(row+1 < gridDimR):
-        adjacents.append((grid[row+1, col])
+        adjacents.append(grid[row+1, col])
         if((col+1)<gridDimC):
             adjacents.append(grid[row+1, col])
-   
     if(row-1 >= 0):
         adjacents.append(grid[row-1,col])
         if(col+1<gridDimC):
@@ -128,5 +127,5 @@ wordGrid = constructRandomWordGrid((5,5), allWords)
 print(wordGrid)
 wordGrid.printboard()
 
-keyCard = constructKeyCard((5,5),8, 9)
+keyCard = constructKeyCard((5,5),8, 9, 0.7,0.7)
 print(keyCard)
