@@ -2,7 +2,7 @@
 """
 Created on Fri Jun 26 20:59:22 2020
 
-Code Names - Text Edition
+Code Names Module - Text Edition
 
 Graphical edition will come soon once I learn how to use pygame....
 
@@ -35,6 +35,10 @@ def getWords(wordsFile):
                     results.append(word)
     return results
             
+"""
+Constructs a grid (matrix) of random words of a given dimension (dims). Words are from a list (wordsList)
+The objects of this grid are of the Card object.
+"""
 def constructRandomWordGrid(dims, wordsList):
     dimX = dims[0]
     dimY = dims[1]
@@ -60,6 +64,7 @@ def generateAllIndices(grid):
     return indices
 """
 Returns a list of adjacent values relative to a point on a grid
+(NOT USED)
 """
 def getAdjacentValues(grid, index):
     adjacents = []
@@ -88,45 +93,87 @@ def getAdjacentValues(grid, index):
     return adjacents
     
     
-            
+def getGridDims(grid):
+    return grid.get_size()[0], grid.get_size()[1]
+
 """
 Game notes: One team contains 8 agents/spots on keycard. The other team has 9 agents/spots. And there is 1 deadly assassin card spot
-Maybe a better implementaiton would be making the back of each gard be the agent...! All other guards will be a wrong guess!
-
-There will be certain probabilities of clustering. a clustering of 2 will have a high chance, 3 will have a lower chance, and 4 
-will have an even lower chance. A clustering of 1 has hte lowest chance.
-
-OR probability of being red is based on number of red 
-
-To do:
-    FIX. Should have exactly rspot and bspots, but it varies! (DONE)
+All other guards will be a wrong guess!
 """
-def constructKeyCard(dims, rSpots, bSpots):
+def constructKeyCard(dims, rSpots, bSpots, aSpots):
     arraySize = dims[0] * dims[1]
     keyCard = np.full(arraySize, "Wrong_Guess")
     
     #I suppose this is returnign a list of random indices. First paramter is range of of indices. size is number of elements.
     #replace determines whether we're sampling with replacement or not. replace = False means no duplicates(no replacement)
     randomIndices = list(np.random.choice(np.arange(arraySize), replace = False,
-                                     size = rSpots + bSpots))
+                                     size = rSpots + bSpots + aSpots))
 
     redIndices = randomIndices[:rSpots]
-    blueIndices = randomIndices[rSpots:arraySize]
+    blueIndices = randomIndices[rSpots:(rSpots+bSpots)]
+    assassinIndices = randomIndices[-1]
     keyCard[redIndices] = 'Red_Agent'
     keyCard[blueIndices]  = 'Blue_Agent'
-        
+    keyCard[assassinIndices] = "Assassin"
     keyCard = keyCard.reshape(dims[0],dims[1])
     return keyCard
     
+def setCardGridBacking(wordGrid, keyCard):
+    dimX, dimY = getGridDims(wordGrid)
 
+    board = wordGrid.get_board()
+    for i in range(0, dimX):
+        for k in range(0, dimY):
+            board[i][k].setBack(keyCard[i][k])
+    
+    wordGrid.set_board(board)
 
+"""
+Just for testing purposes
+"""
+def flipAllCards(wordsGrid):
+    dimX, dimY = getGridDims(wordGrid)
+    for i in range(0, dimX):
+        for k in range(0, dimY):
+            wordsGrid.flip_card(i,k)#flips card at specifc index
+
+"""
+There are 2 code masters. The code masters give clues to their teammates as to what words to choose.
+The more words their clues encompass, the better. The code masters must also tell exactly how many words their
+clue encompasses. Their goal is to match the key card for their respective team before the other team does.
+
+Teams get to keep going until either all words are selected or they choose a wrong card. I believe teams can also make a random
+guess if they so choose after selecting all the cards correctly.
+
+If an assassin card is chose, then the team that choses automatically loses. There is only 1 assassin card.
+
+To Do:
+    implement the game itself according to the rules above. Use GameRoundManager module to help you.
+    Then, start working on the UI layer for all these things. This requires careful planning. (Flask integration for web app usage.)
+"""
+def PlayCodeNames(master1, master2):
+    #hmmmm
+    return None
+    
+#Setting up the word grid
 allWords = getWords("CodenamesWordList.csv")+getWords("CodenamesWordList2.csv")
 wordGrid = constructRandomWordGrid((5,5), allWords)
 print(wordGrid)
 wordGrid.printboard()
 
-keyCard = constructKeyCard((5,5),8, 9)
+#Setting up the key card
+keyCard = constructKeyCard((5,5),8, 9, 1)
+"""
 print(keyCard)
 unique, counts = np.unique(keyCard, return_counts = True)
 print(counts)
 print(unique)
+"""
+#Setting the key card as the back of respective cards of the word grid
+setCardGridBacking(wordGrid, keyCard)
+flipAllCards(wordGrid)
+wordGrid.printboard()#The keycard backing.
+flipAllCards(wordGrid)#flipping back for game
+
+
+

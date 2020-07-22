@@ -43,14 +43,25 @@ class Card(GamePiece):
     
     #This is obivously disgusting, you need to come up with a better hierarchy of game pieces
     def getPieceNum(self):
-        return self.front
-    
+        if(self.front_facing == True):
+            return self.front
+        else:
+            return self.back
     #methods
     
     def setFace(self, front_facing):
         self.front_facing = front_facing
+        
+    def setBack(self, back_face):
+        self.back = back_face
     
     def flipCard(self):
         self.front_facing = not self.front_facing
+        
+    def __str__(self):
+        if(self.front_facing == True):
+            return(self.front)
+        else:
+            return(self.back)
     
         

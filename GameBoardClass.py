@@ -61,7 +61,7 @@ class GameGrid:
         self._grav = gravity
     
     def get_size(self):
-        return (self.X, self.Y)
+        return (self._X, self._Y)
     
     def get_board(self):
         return self._grid
@@ -78,6 +78,13 @@ class GameGrid:
     
     def set_board(self, new_grid):
         self._grid = new_grid
+        
+    def set_gridElem(self, new_elem, indX, indY):
+        self._grid[indX][indY] = new_elem
+    
+    #only works with card class. Need to add exception handling here...(Or search up what actual good practice is...)
+    def flip_card(self, indX, indY):
+        self._grid[indX][indY].flipCard()
         
     def isEmpty(self):
         compareGrid = np.full((self.X, self.Y), None)
