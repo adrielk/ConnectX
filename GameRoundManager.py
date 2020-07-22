@@ -16,6 +16,9 @@ def playerSetUp(teamNum):
     playerPieces = [gp(teamNum)]
     return plr(pName, teamNum, playerPieces) 
 
+"""
+among a list of players, decides who goes first randomly.
+"""
 def decideFirst(players):
     print("Flipping "+str(len(players))+" sided coin")
     result = randint(0, len(players)-1)
@@ -52,8 +55,10 @@ def getSequenceOwner(grid, length):
 
 def hasSequence(grid, length):
     return len(grid.findsequences(length)) !=0
-    
-        
+
+"""
+displays board with column and row numbering
+"""
 def displayBoard(grid):
     gridInt = grid.createIntGrid()
     rowLabels = np.arange(0, gridInt.shape[0]).reshape(gridInt.shape[0], 1)
@@ -63,3 +68,8 @@ def displayBoard(grid):
     newGrid = np.concatenate((colLabels, newGrid), axis = 0)
     newGrid = np.where(newGrid == None, '~', newGrid)
     print(newGrid,'\n')
+
+#Winner is player object
+def congratulateWinner(winner):
+    print("%s wins!" %(winner.getName()))
+    

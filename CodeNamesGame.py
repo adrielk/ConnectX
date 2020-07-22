@@ -22,6 +22,7 @@ from random import randint
 import GameRoundManager as gm
 import csv
 import numpy as np
+import copy
 
 
 def getWords(wordsFile):
@@ -120,22 +121,28 @@ def constructKeyCard(dims, rSpots, bSpots, aSpots):
     
 def setCardGridBacking(wordGrid, keyCard):
     dimX, dimY = getGridDims(wordGrid)
-
-    board = wordGrid.get_board()
+    newBoard = copy.deepcopy(wordGrid)
+    
+    board = newBoard.get_board()
     for i in range(0, dimX):
         for k in range(0, dimY):
             board[i][k].setBack(keyCard[i][k])
     
-    wordGrid.set_board(board)
+    return newBoard
 
-"""
-Just for testing purposes
-"""
 def flipAllCards(wordsGrid):
     dimX, dimY = getGridDims(wordGrid)
     for i in range(0, dimX):
         for k in range(0, dimY):
             wordsGrid.flip_card(i,k)#flips card at specifc index
+
+def getUniqueCounts(matrix):
+    return np.unique(matrix, return_counts = True)
+
+def getKeyCardCounts(keyCard):
+    unique, counts = getUniqueCounts(keyCard)
+    #the counts are in the following order: Assassin, Blue_Agent, Red_Agent, Wrong_Guess
+    return counts[0], counts[1], counts[2], counts[3], unique
 
 """
 There are 2 code masters. The code masters give clues to their teammates as to what words to choose.
@@ -147,14 +154,75 @@ guess if they so choose after selecting all the cards correctly.
 
 If an assassin card is chose, then the team that choses automatically loses. There is only 1 assassin card.
 
+
+Pseudo Implementation:
+    while both teams have all their cards and no one has chosen assassin
+        code master turn. tell code master to come up with a clue for X amount of words
+        ask code master to select card (row and col)
+        card is flipped
+        if card is assassin, output opposing team as winner
+        if card is valid, then loop for another turn 
+        if card is wrong, then next code master's turn
+        code master can choose to pass
+        if card is last one for that team, then code master wins
+        
 To Do:
-    implement the game itself according to the rules above. Use GameRoundManager module to help you.
-    Then, start working on the UI layer for all these things. This requires careful planning. (Flask integration for web app usage.)
+    implement the game itself according to the rules above. Use GameRoundManager module to help you. (DONE)
+    Test for bugs, play test.
+    Then, start working on the UI layer for all these things. This requires careful planning. (Flask integration for web app usage.)***
 """
-def PlayCodeNames(master1, master2):
-    #hmmmm
-    return None
-    
+def PlayCodeNames(master1, master2, wordGrid, keyCard):
+    #Player set up
+    players = [master1, master2]
+    firstMaster = gm.decideFirst(players)
+    players.remove(firstMaster)
+    secondMaster = players[0]
+    #Board and keycard setup
+    displayBoard = setCardGridBacking(wordGrid, keyCard)#For display purposes only
+    assinCount, blueCount, redCount, wrongCount, uniqueList = getKeyCardCounts(keyCard)
+    currentMaster = firstMaster
+    """
+    print(firstMaster)
+    print(secondMaster)
+    print("%d, %d, %d, %d" % (assinCount, blueCount, redCount, wrongCount))
+    """
+    print("Key Card:")
+    print(keyCard,'\n')
+
+    while(blueCount > 0 and redCount > 0 and assinCount > 0):
+        #displayBoard.printboard()
+        gm.displayBoard(displayBoard)
+        print("%s's turn! Come up with a clue and select a card!" % (currentMaster.getName()))
+        print("Card row: ")
+        row = int(input())
+        print("Card column: ")
+        col = int(input())
+        
+        keyCardElem = keyCard[row][col]
+        
+        if(keyCardElem == uniqueList[0]):
+            assinCount -= 1;
+        elif(keyCardElem == uniqueList[1]):
+            blueCount -= 1;
+        elif(keyCardElem == uniqueList[2]):
+            redCount -= 1;
+        
+        displayBoard.flip_card(row, col)
+        #displayBoard.printboard()
+        gm.displayBoard(displayBoard)
+        if(blueCount == 0 or redCount == 0):
+            gm.congratulateWinner(currentMaster)
+        
+        if (currentMaster == firstMaster):
+            currentMaster =  secondMaster
+        else:
+            currentMaster = firstMaster
+
+        if(assinCount == 0):
+            gm.congratulateWinner(currentMaster)
+        print("____________________________________________________________________________________")
+        
+
 #Setting up the word grid
 allWords = getWords("CodenamesWordList.csv")+getWords("CodenamesWordList2.csv")
 wordGrid = constructRandomWordGrid((5,5), allWords)
@@ -165,15 +233,21 @@ wordGrid.printboard()
 keyCard = constructKeyCard((5,5),8, 9, 1)
 """
 print(keyCard)
-unique, counts = np.unique(keyCard, return_counts = True)
+unique, counts = getUniqueCounts(keyCard)
 print(counts)
 print(unique)
-"""
+
 #Setting the key card as the back of respective cards of the word grid
-setCardGridBacking(wordGrid, keyCard)
-flipAllCards(wordGrid)
-wordGrid.printboard()#The keycard backing.
-flipAllCards(wordGrid)#flipping back for game
+newBoard = setCardGridBacking(wordGrid, keyCard)
+flipAllCards(newBoard)
+newBoard.printboard()#The keycard backing.
+flipAllCards(newBoard)#flipping back for game
+newBoard.printboard()
+"""
+master1 = gm.playerSetUp("Red")
+master2 = gm.playerSetUp("Blue")
+PlayCodeNames(master1, master2, wordGrid, keyCard)
+
 
 
 

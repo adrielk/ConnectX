@@ -84,7 +84,7 @@ class GameGrid:
     
     #only works with card class. Need to add exception handling here...(Or search up what actual good practice is...)
     def flip_card(self, indX, indY):
-        self._grid[indX][indY].flipCard()
+        self._grid[int(indX)][int(indY)].flipCard()
         
     def isEmpty(self):
         compareGrid = np.full((self.X, self.Y), None)
