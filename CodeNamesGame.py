@@ -99,49 +99,23 @@ will have an even lower chance. A clustering of 1 has hte lowest chance.
 OR probability of being red is based on number of red 
 
 To do:
-    FIX. Should have exactly rspot and bspots, but it varies!
+    FIX. Should have exactly rspot and bspots, but it varies! (DONE)
 """
-def constructKeyCard(dims, rSpots, bSpots, rProb, bProb):
-    keyCard = np.full((dims[0],dims[1]), "Wrong_Guess")
-    possibleIndices = generateAllIndices(keyCard)
+def constructKeyCard(dims, rSpots, bSpots):
+    arraySize = dims[0] * dims[1]
+    keyCard = np.full(arraySize, "Wrong_Guess")
     
-    
-    while(rSpots > 0):
-        randIndex = randint(0, len(possibleIndices)-1)
-        randRow = possibleIndices[randIndex][0]
-        randCol = possibleIndices[randIndex][1]
-        adjacents = getAdjacentValues(keyCard, (randRow, randCol))
+    #I suppose this is returnign a list of random indices. First paramter is range of of indices. size is number of elements.
+    #replace determines whether we're sampling with replacement or not. replace = False means no duplicates(no replacement)
+    randomIndices = list(np.random.choice(np.arange(arraySize), replace = False,
+                                     size = rSpots + bSpots))
+
+    redIndices = randomIndices[:rSpots]
+    blueIndices = randomIndices[rSpots:arraySize]
+    keyCard[redIndices] = 'Red_Agent'
+    keyCard[blueIndices]  = 'Blue_Agent'
         
-        keyCard[randRow, randCol] = "Red_Agent"
-        rSpots -=1
-        for a in adjacents:
-            randNum = randint(0,100)
-            if rSpots > 0 and keyCard[a[0],a[1]] == "Wrong_Guess" and randNum <= rProb*100:
-                keyCard[a[0],a[1]] = "Red_Agent"
-                rSpots -= 1
-        
-        possibleIndices.remove(possibleIndices[randIndex])
-        
-    while(bSpots > 0):
-        randIndex = randint(0, len(possibleIndices)-1)
-        randRow = possibleIndices[randIndex][0]
-        randCol = possibleIndices[randIndex][1]
-        adjacents = getAdjacentValues(keyCard, (randRow, randCol))
-        
-        keyCard[randRow, randCol] = "Blue_Agent"
-        bSpots -=1
-        for a in adjacents:
-            randNum = randint(0,100)
-            if bSpots > 0 and a in possibleIndices and keyCard[a[0],a[1]] == "Wrong_Guess" and randNum <= bProb*100:
-                keyCard[a[0],a[1]] = "Blue_Agent"
-                bSpots -= 1
-        
-        possibleIndices.remove(possibleIndices[randIndex])
-    
-    randIndex = randint(0, len(possibleIndices)-1)
-    randRow = possibleIndices[randIndex][0]
-    randCol = possibleIndices[randIndex][1] 
-    keyCard[randRow, randCol] = "Assassin"
+    keyCard = keyCard.reshape(dims[0],dims[1])
     return keyCard
     
 
@@ -151,7 +125,7 @@ wordGrid = constructRandomWordGrid((5,5), allWords)
 print(wordGrid)
 wordGrid.printboard()
 
-keyCard = constructKeyCard((5,5),8, 9, 0.7,0.7)
+keyCard = constructKeyCard((5,5),8, 9)
 print(keyCard)
 unique, counts = np.unique(keyCard, return_counts = True)
 print(counts)
